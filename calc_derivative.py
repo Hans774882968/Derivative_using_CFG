@@ -124,9 +124,7 @@ class Derivative():
         else: return False,"invalid_func","invalid_func"
         return True,ans,func
     #parts：存各部分导数
-    #pos：存各部分的原字符串下标，s[pos[j][0]:pos[j][1]]即各部分的原字符串。
-    #之所以结束位置是i - 2是因为i - 1（即token）是符号"*"。
-    #不需要加括号，因为有加减号的情况函数都是自带括号的
+    #不需要加括号，因为一个因子有加减号的情况下，函数都是自带括号的
     def T(self):
         parts = []
         fl,part0,func0 = self.E()
