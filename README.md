@@ -1,33 +1,32 @@
-库：numpy、sympy（对拍）
+库：
 
-以下命令可以从豆瓣源下sympy：
+- numpy
+- sympy（对拍）
 
-pip install -i https://pypi.doubanio.com/simple sympy
-
-
+以下命令可以从豆瓣源下sympy：`pip install -i https://pypi.doubanio.com/simple sympy`
 
 这是个递归下降法实现的求导玩具。文法（注意规避左递归等）：
 
-```c++
+```cpp
 S -> T+S | T-S	
 T -> E*T
 E -> di^ch | ch^di | di^di | (S) | -E | ln(S) | cos(S) | sin(S)
-//di是0~9，ch是alpha
+// di是0~9，ch是alpha
 ```
 
 
 
 由于我太鶸，只实现了以下功能：
 
-- 多项式和指数函数的求导（不支持复合。但其实底数为常数、指数为函数的情况下，支持复合函数的实现也十分轻易：self.process_exp()下与elif ans2 == self.varname:并列一个分支：elif ans2 == "(":，调用self.derivative()即可）。
+- 多项式和指数函数的求导（不支持复合。但其实底数为常数、指数为函数的情况下，支持复合函数的实现也十分轻易：`self.process_exp()`下与`elif ans2 == self.varname:`并列一个分支：`elif ans2 == "(":`，调用`self.derivative()`即可）。
 - 可以省略一部分导数值为0的式子。
 - 求ln、sin、cos的复合函数的导（对于exp、sqrt、sigmoid等函数，参考代码也可轻易写出）。
 - 可以有任意多个前导负号。
-- 顺便format了下。
+- 顺便`format`了下。
 
-在打这段代码的时候没看过龙书，但是居然也折腾出来了。就是每调用一次advance()就大力讨论所有可能的情况并采取措施……后来看了龙书才知道这种parse过程中顺便维护一些值的做法叫SDD。
+在打这段代码的时候没看过龙书，但是居然也折腾出来了。就是每调用一次`advance()`就大力讨论所有可能的情况并采取措施……后来看了龙书才知道这种parse过程中顺便维护一些值的做法叫SDD。
 
-然后这个文法应该是LL(k)文法但我不会证。
+然后这个文法应该是`LL(k)`文法但我不会证。
 
 我：小孩玩泥巴.gif。~~当然看了GitHub上的求导代码以后就更加卑微了。~~
 
@@ -35,8 +34,8 @@ E -> di^ch | ch^di | di^di | (S) | -E | ln(S) | cos(S) | sin(S)
 
 可惜还有这样那样的缺陷，所以注定只是个玩具：
 
-- 加入负号功能后format不统一（无伤大雅）。
-- 右边有多余")"、"^"等情况仍被判定为合法（不会修QAQ）。
+- 加入负号功能后`format`不统一（无伤大雅）。
+- 右边有多余`")"`、`"^"`等情况仍被判定为合法（不会修QAQ）。
 - 没有支持除法，因为我写不出优雅的代码QAQ。
 - 不能处理空格以外的无关符号（处理脏数据的代码才不想写哼）。
 - 没有进行智能化简（比如乘1、乘0……），因为不会写。

@@ -36,6 +36,7 @@ inline void read(Type& xx) {
   xx *= f;
 }
 
+// regex_replace不能正确匹配若干反斜杠这种字符串
 string my_replace(string s, string old, string cur) {
   int pos = 0;
   string ret;
@@ -50,33 +51,59 @@ string my_replace(string s, string old, string cur) {
   return ret;
 }
 
-void advance() {
-  if (s[idx] == ',' || s[idx] == ':' || s[idx] == '{' || s[idx] == '}') {
-    token = s[idx++];
-    return;
-  }
-  if (idx > 1 && s[idx - 1] == '"' && s[idx - 2] != '\\') {
-    cur = "";
-    while (1) {
-      cur += s[idx++];
-      /*
-      这种写法不能正确处理"\\\\\\\\"这种字符串。
-      if(s[idx] == '"' && s[idx - 1] != '\\') break;
-      */
-      if (s[idx] == '"' &&
-          (s[idx + 1] == ',' || s[idx + 1] == '}' || s[idx + 1] == ':'))
-        break;
+// 预处理。仍需要保证反斜杠后面的字符为‘"’或‘\’
+string clear_spaces(string s) {
+  string ret = "";
+  int pos = 0;
+  while (pos < s.size()) {
+    int tmpp = pos;
+    for (; pos < s.size() && s[pos] != '"'; ++pos);
+    ret += my_replace(s.substr(tmpp, pos - tmpp), " ", "");
+    if (pos >= s.size()) break;
+    tmpp = pos;
+    int slash_state = 0;
+    for (; pos < s.size(); ++pos) {
+      if (s[pos] == '\\')
+        slash_state = !slash_state;
+      else if (pos > tmpp && s[pos] == '"') {
+        if (!slash_state)
+          break;
+        else
+          slash_state = 0;
+      }
     }
+    ++pos;
+    ret += s.substr(tmpp, pos - tmpp);
+  }
+  return ret;
+}
+
+void advance() {
+  /*
+  思想：归纳基础是可以正确来到第1个引号。那么我们只要保证反斜杠是匹配的，就可以保证第1次正确地来到和上述引号匹配的引号。这个算法可以保证第1个key正确读取，于是由归纳法，当前总是能正确判定是否在字符串内部。
+  最后应停在匹配引号的后一个位置，比如":"、","和"}"。
+  */
+  if (s[idx] == '"' && s[idx - 1] != '\\') {
+    int pos = idx, slash_state = 0;
+    for (;; ++pos) {
+      if (s[pos] == '\\')
+        slash_state = !slash_state;
+      else if (pos > idx && s[pos] == '"') {
+        if (!slash_state)
+          break;
+        else
+          slash_state = 0;
+      }
+    }
+    cur = s.substr(idx + 1, pos - idx - 1);
+    idx = pos + 1;
   } else
     token = s[idx++];
 }
 
 string parse_str() {
-  advance();  // assert(token == '"');
   advance();
-  string ret = cur;
-  advance();  // assert(token == '"');
-  return ret;
+  return cur;
 }
 
 string parse_val(string prefixes) {
@@ -119,8 +146,9 @@ int main(int argc, char** argv) {
     fgets(s0, SZ, stdin);
     s0[strlen(s0) - 1] = '\0';
     string s00 = s0;
-    s += my_replace(s00, " ", "");
+    s += s00;
   }
+  s = clear_spaces(s);
   idx = 0;
   parse("");
   while (m--) {
